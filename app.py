@@ -144,11 +144,17 @@ def build_pdf(summary, topics, timestamps, transcript):
     ]
     for title, body in sections:
         pdf.set_font("Helvetica", "B", 18 if body is None else 14)
-        pdf.multi_cell(0, 10, clean(title))
-        if body:
-            pdf.set_font("Helvetica", "", 10)
-            pdf.multi_cell(0, 5, clean(body))
-            pdf.ln(4)
+        pdf.multi_cell(
+    0, 10, clean(title),
+    new_x="LMARGIN",
+    new_y="NEXT"
+)
+
+pdf.multi_cell(
+    0, 5, clean(body),
+    new_x="LMARGIN",
+    new_y="NEXT"
+)
     return bytes(pdf.output())
 
 st.set_page_config(page_title=APP_TITLE, page_icon="🎥", layout="wide")
