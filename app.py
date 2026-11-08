@@ -130,27 +130,60 @@ def build_notes(summary, topics, timestamps, transcript):
         "\n\n## Full Transcript\n" + transcript + "\n"
     )
 
+
 def build_pdf(summary, topics, timestamps, transcript):
     from fpdf import FPDF
+
     def clean(value):
-        return str(value).replace("**", "").encode("latin-1", "replace").decode("latin-1")
+        return (
+            str(value)
+            .replace("**", "")
+            .encode("latin-1", "replace")
+            .decode("latin-1")
+        )
+
     pdf = FPDF()
+    pdf.set_margins(15, 15, 15)
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
-    sections = [
-        ("AI Video Summary Report", None), ("Summary", summary),
-        ("Key Topics", "\n".join(f"{i}. {t}" for i, t in enumerate(topics, 1))),
-        ("Timestamps", "\n".join(timestamps)), ("Transcript", transcript)
-    ]
-    for title, body in sections:
-        pdf.set_font("Helvetica", "B", 18 if body is None else 14)
-        pdf.multi_cell(0, 10, clean(title))
-        if body:
-            pdf.set_font("Helvetica", "", 10)
-            pdf.multi_cell(0, 5, clean(body))
-            pdf.ln(4)
-    return bytes(pdf.output())
 
+    sections = [
+        ("AI Video Summary Report", None),
+        ("Summary", summary),
+        ("Key Topics", "\n".join(
+            f"{i}. {t}" for i, t in enumerate(topics, 1)
+        )),
+        ("Timestamps", "\n".join(timestamps)),
+        ("Transcript", transcript)
+    ]
+
+    page_width = pdf.w - pdf.l_margin - pdf.r_margin
+
+    for title, body in sections:
+
+        pdf.set_x(pdf.l_margin)
+        pdf.set_font("Helvetica", "B", 18 if body is None else 14)
+
+        pdf.multi_cell(
+            page_width,
+            10,
+            clean(title)
+        )
+
+        if body:
+            pdf.set_x(pdf.l_margin)
+            pdf.set_font("Helvetica", "", 10)
+
+            pdf.multi_cell(
+                page_width,
+                5,
+                clean(body)
+            )
+
+            pdf.ln(4)
+
+    return bytes(pdf.output())
+    
 st.set_page_config(page_title=APP_TITLE, page_icon="🎥", layout="wide")
 st.title("🎥 AI Video Summarizer")
 st.caption("Upload a video to get a transcript, summary, topics, timestamps and downloadable notes.")
